@@ -1,10 +1,16 @@
 import pyttsx3
 import datetime
+try:
+    from config import VOICE_RATE, VOICE_INDEX
+except ImportError:
+    print("Warning: config.py not found. Using default values.")
+    VOICE_RATE = 200
+    VOICE_INDEX = 0
 
 engine = pyttsx3.init("sapi5")
 voices = engine.getProperty("voices")
-engine.setProperty("voice", voices[0].id)
-engine.setProperty("rate",200)
+engine.setProperty("voice", voices[VOICE_INDEX].id)
+engine.setProperty("rate", VOICE_RATE)
 
 def speak(audio):
     engine.say(audio)

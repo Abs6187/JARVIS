@@ -1,18 +1,25 @@
 import wolframalpha
 import pyttsx3
 import speech_recognition
+try:
+    from config import WOLFRAM_API_KEY_2, VOICE_RATE, VOICE_INDEX
+except ImportError:
+    print("Warning: config.py not found. Using default values.")
+    WOLFRAM_API_KEY_2 = "UQ4E6L-64JWP8VLVT"
+    VOICE_RATE = 170
+    VOICE_INDEX = 0
 
 engine = pyttsx3.init("sapi5")
 voices = engine.getProperty("voices")
-engine.setProperty("voice", voices[0].id)
-rate = engine.setProperty("rate",170)
+engine.setProperty("voice", voices[VOICE_INDEX].id)
+rate = engine.setProperty("rate", VOICE_RATE)
 
 def speak(audio):
     engine.say(audio)
     engine.runAndWait()
 
 def WolfRamAlpha(query):
-    apikey = "UQ4E6L-64JWP8VLVT"   #Enter Your OWN API KEY
+    apikey = WOLFRAM_API_KEY_2   # Now uses config
     requester = wolframalpha.Client(apikey)
     requested = requester.query(query)
 

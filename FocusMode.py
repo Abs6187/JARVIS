@@ -1,32 +1,50 @@
 import time
 import datetime
-import ctypes,sys
+import ctypes
+import sys
+import os
+try:
+    from config import BLOCKED_WEBSITES, FOCUS_DATA_FILE
+except ImportError:
+    print("Warning: config.py not found. Using default values.")
+    BLOCKED_WEBSITES = ["www.facebook.com", "facebook.com", "www.instagram.com", "instagram.com"]
+    FOCUS_DATA_FILE = "focus.txt"
 def is_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
-if is_admin():
+
+def focus_mode():
+    if not is_admin():
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        return
+        
     current_time = datetime.datetime.now().strftime("%H:%M")
     Stop_time = input("Enter time example:- [10:10]:- ")
-    a = current_time.replace(":",".")
+    a = current_time.replace(":", ".")
     a = float(a)
-    b = Stop_time.replace(":",".")
+    b = Stop_time.replace(":", ".")
     b = float(b)
-    Focus_Time = b-a
-    Focus_Time = round(Focus_Time,3)
-    host_path ='C:\Windows\System32\drivers\etc\hosts'
+    Focus_Time = b - a
+    Focus_Time = round(Focus_Time, 3)
+    
+    # Only works on Windows
+    if os.name != 'nt':
+        print("Focus mode only works on Windows systems.")
+        return
+        
+    host_path = r'C:\Windows\System32\drivers\etc\hosts'
     redirect = '127.0.0.1'
 
-    
     print(current_time)
     time.sleep(2)
-    website_list = ["www.facebook.com","facebook.com","www.instagram.com","instagram.com"]
+    
     if (current_time < Stop_time):
-        with open(host_path,"r+") as file: #r+ is writing+ reading
+        with open(host_path, "r+") as file:  # r+ is writing+ reading
             content = file.read()
             time.sleep(2)
-            for website in website_list:    
+            for website in BLOCKED_WEBSITES:    
                 if website in content:
                     pass
                 else:
@@ -35,30 +53,33 @@ if is_admin():
                     time.sleep(1)
             print("FOCUS MODE TURNED ON !!!!")
 
-
     while True:     
-        
         current_time = datetime.datetime.now().strftime("%H:%M")
-        website_list = ["www.facebook.com","facebook.com","www.instagram.com","instagram.com","youtube.com","www.youtube.com"]
         if (current_time >= Stop_time):
-            with open(host_path,"r+") as file:
+            with open(host_path, "r+") as file:
                 content = file.readlines()
                 file.seek(0)
 
                 for line in content:
-                    if not any(website in line for website in website_list):
+                    if not any(website in line for website in BLOCKED_WEBSITES):
                         file.write(line)
 
                 file.truncate()
 
                 print("Websites are unblocked !!")
-                file = open("focus.txt","a")
-                file.write(f",{Focus_Time}")        #Write a 0 in focus.txt before starting
+                
+                # Ensure focus data file exists
+                if not os.path.exists(FOCUS_DATA_FILE):
+                    with open(FOCUS_DATA_FILE, "w") as f:
+                        f.write("0")
+                        
+                file = open(FOCUS_DATA_FILE, "a")
+                file.write(f",{Focus_Time}")        # Write a 0 in focus.txt before starting
                 file.close()
                 break 
 
-else:
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+if __name__ == "__main__":
+    focus_mode()
 
 
 
